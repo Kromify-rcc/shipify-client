@@ -119,13 +119,16 @@ parallel.waitForAny(main, ecnet2.daemon)
 
 * **fromAddress**: Address you are sending from (`name@user`)
 * **toAddress**: Full destination address (e.g., `primary@sethgamer1223`)
-* **slots**: Table of slot ranges, e.g.:
+* **slots**: Table of slots or table of slots with range, e.g.:
 
 ```lua
 {
-  {1, 5},
-  {10, 12}
+  {1, 5}, --first slot send 5 items
+  {10, 12} --10th slot send 12 items
 }
+```
+```lua
+{1,2,3,4,5,6} --send all of items in slots 1-6
 ```
 
 **Response**
