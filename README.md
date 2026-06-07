@@ -1,64 +1,251 @@
-Manages the enderstorages and API.
+# Shipify
 
-# Documentation
+Manages enderstorages and provides the Shipify API.
+
+---
+
+# Installation
+
+## Install Shipify CLI (Also installs library)
+
+```lua
+wget run https://raw.githubusercontent.com/Kromify-rcc/shipify-client/main/installer.lua
+```
+
+## Install Library Only
+
+```lua
+wget run https://raw.githubusercontent.com/Kromify-rcc/shipify-client/main/libinstaller.lua
+```
+
+---
+
+# Library Usage
+
+The Shipify library wraps ecnet2  and provides a API for interacting with shipify.
+
+---
+
+## Dependencies
+
+* ecnet2 (auto installed when using installer)
+* ccryptolib (auto installed when using installer)
+* Wireless modem 
+* Optional: cryptographic accelerator (recommended when getting transfer event data)
+
+---
+
+## Initialization Example
+
+```lua
+local shipify = require("shipify")
+
+shipify.setKey("your-api-key")
+shipify.setAddress("primary@user")
+
+local function main()
+    -- your code here
+end
+
+
+parallel.waitForAny(shipify.run,main)
+```
+
+---
+
+
+# Shipify Transfer Events
+
+Shipify has transfer notifications through events.
+
+## Enabling Transfer Events
+
+Transfer events are **disabled by default**.
+
+You MUST enable them manually:
+
+```lua
+shipify.listenTransfers = true
+```
+
+Without this, the library will NOT emit any transfer events.
+
+---
+
+
+## Event Format
+
+The `shipify_transfer` event provides a table with transfer details.
+
+### Structure
+Some internal fields are excluded from examples.
+
+```lua
+{
+  transfers = {
+    {
+      transferred = number,
+      fromSlot = number,
+      item = string
+    },
+    ...
+  },
+  to = string,
+  from = string
+}
+```
+
+---
+
+## Example Event (Multiple transfers)
+
+```lua
+{
+  transfers = {
+    {
+      transferred = 64,
+      fromSlot = 1,
+      item = "minecraft:coal",
+    },
+    {
+      transferred = 64,
+      fromSlot = 2,
+      item = "minecraft:coal",
+    },
+    {
+      transferred = 64,
+      fromSlot = 3,
+      item = "minecraft:coal",
+    },
+    {
+      transferred = 64,
+      fromSlot = 4,
+      item = "minecraft:coal",
+    },
+    {
+      transferred = 64,
+      fromSlot = 5,
+      item = "minecraft:coal",
+    },
+    {
+      transferred = 16,
+      fromSlot = 6,
+      item = "minecraft:coal",
+    },
+  },
+  to = "primary@HerrKatzeGaming",
+  from = "primary@SethGamer1223",
+}
+```
+
+---
+
+## Example Event (Single Transfer)
+
+```lua
+{
+  transfers = {
+    {
+      transferred = 10,
+      fromSlot = 1,
+      item = "minecraft:golden_carrot",
+    },
+  },
+  to = "primary@HerrKatzeGaming",
+  from = "primary@SethGamer1223",
+}
+```
+
+---
+
+## Listening for Events
+
+Once enabled:
+
+```lua
+local shipify = require("shipify")
+
+shipify.setKey("your-api-key")
+shipify.setAddress("primary@user")
+
+shipify.listenTransfers = true
+local function main()
+    while true do
+      local event, data = os.pullEvent("shipify_transfer")
+    
+      print("got items from:", data.from)
+    
+      for _, t in ipairs(data.transfers) do
+        print(t.item, t.transferred)
+      end
+    end
+end
+parallel.waitForAny(main,shipify.run)
+```
+
+---
+
+# API Functions
+
+## shipify.setKey(key)
+
+Sets API authentication key.
+
+```lua
+shipify.setKey("my-secret-key")
+```
+
+---
+
+## shipify.setAddress(address)
+
+Sets default sender address.
+
+```lua
+shipify.setAddress("primary@user")
+```
+
+---
+
+## shipify.getEnderstorages(id)
+
+Fetch all enderstorages owned by a user.
+
+```lua
+local res = shipify.getEnderstorages("player123")
+```
+
+---
+
+## shipify.send(from, to, slot)
+
+Send items between enderstorages. A default sender address can be set using shipify.setAddress(). If a default address is set, the from parameter may be nil.
+
+```lua
+shipify.send("primary@user", "other@user", 1)
+```
+
+---
+
+## shipify.run()
+
+connects to the shipify server and starts the ecnet2 daemon and transfer handler. Blocks indefinitely
+
+```lua
+shipify.run()
+```
+
+This must be running otherwise the library **will not** work. including transfer events.
+
+---
+
+
+
+# Technical Protocol
 
 **Connection**
 * Server Address: c76qTSo54lzNaqVyizQlM_pbHdHinhUFKU2mnIe19WE
 * Protocol: shipify
-* Libraries Required: [ecnet2](https://github.com/migeyel/ecnet) and [ccryptolib](https://github.com/migeyel/ccryptolib/releases).
-
-Example Client:
-
-```lua
-local ecnet2 = require "ecnet2"
-local random = require "ccryptolib.random"
-
--- https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&loweralpha=on&unique=on&format=plain&rnd=new
--- Initialize the random generator.
-local postHandle = assert(http.post("https://krist.dev/ws/start", "{}"))
-local data = textutils.unserializeJSON(postHandle.readAll())
-postHandle.close()
-random.init(data.url)
-http.websocket(data.url).close()
-
--- Open the top modem for comms.
-ecnet2.open("top")
-
-
-local id = ecnet2.Identity("/.ecnet2")
-
-local ping = id:Protocol {
-
-    name = "shipify",
-
-    -- Objects must be serialized before they are sent over.
-    serialize = textutils.serialize,
-    deserialize = textutils.unserialize,
-}
-
--- The server's address.
-local server = "c76qTSo54lzNaqVyizQlM_pbHdHinhUFKU2mnIe19WE="
-
-local function main()
-    -- Connect to the server.
-    local connection = ping:connect(server, "top")
-
-    -- Wait for the greeting.
-    print(select(2, connection:receive()))
-
-    -- Read inputs and print ping outputs.
-    connection:send({
-        key = "key",
-        route = "",
-        data = {}
-    })
-    local pretty = require("cc.pretty").pretty
-    print(pretty(select(2, connection:receive() )) )
-end
-
-parallel.waitForAny(main, ecnet2.daemon)
-```
-
 
 ## Structure
 ```lua
