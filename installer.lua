@@ -1,7 +1,7 @@
 shell.run("wget https://raw.githubusercontent.com/Twijn/cc-misc/main/util/cmd.lua")
 shell.run("wget https://raw.githubusercontent.com/Twijn/cc-misc/main/util/pager.lua")
-shell.run("wget https://raw.githubusercontent.com/Kromify-rcc/shipifyDocumentation/main/shipifyLib.lua")
-shell.run("wget https://raw.githubusercontent.com/Kromify-rcc/shipifyDocumentation/main/shipifycli.lua")
+shell.run("wget https://raw.githubusercontent.com/Kromify-rcc/shipify-client/main/shipifyLib.lua")
+shell.run("wget https://raw.githubusercontent.com/Kromify-rcc/shipify-client/main/shipifycli.lua")
 shell.run("wget run https://github.com/migeyel/ccryptolib/releases/download/v1.2.2/install.lua")
 shell.run("wget run https://github.com/migeyel/ecnet/releases/download/v2.1.0/install.lua")
 
