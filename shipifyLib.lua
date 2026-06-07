@@ -46,7 +46,7 @@ local function verifyPacket(message)
 end
 
 local function daemon()
-    api.connection = protocol:connect(server, "top")
+    api.connection = protocol:connect(server, wirelessModemName)
     local greeting = select(2, api.connection:receive())
     api.publicKey = greeting.pubKey
     while true do
