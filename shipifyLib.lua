@@ -76,6 +76,34 @@ function api.getEnderstorages(id)
     return select(2, api.connection:receive())
 end
 
+function api.setType(name,type,frequency)
+    assert(api.key,"Set api key with .setKey(key)")
+    expect(1,name,"string")
+    expect(2,type,"string")
+    expect(3,frequency,"table")
+    if #frequency ~= 3 then
+        error("invalid frequency length")
+    end
+    local validTypes = {
+            ["send"] = true,
+            ["rec"] = true,
+            ["rec/send"] = true
+        }
+        if not validTypes[type] then
+            error("invalid type. send,rec,rec/send")
+        end
+    api.connection:send({
+        key = api.key,
+        route = "changeType",
+        data = {
+            name=name,
+            frequency=frequency,
+            type = type
+        }
+    })
+    return select(2,api.connection:receive())
+end
+
 function api.send(from,to,slot)
     expect(1,from,"string","nil")
     expect(2,to,"string")

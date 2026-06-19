@@ -227,6 +227,14 @@ shipify.send("primary@user", "other@user", 1)
 
 ---
 
+## shipify.setType(name,type,frequency)
+Sets the type of transfers a enderstorage will handle. rec,send, or rec/send. This is by default set to rec/send when a enderstorage is added. frequency is the 3 colors of the enderstorage.
+
+```lua
+shipify.setType("primary","rec",{64,64,64})
+```
+---
+
 ## shipify.run()
 
 connects to the shipify server and starts the ecnet2 daemon and transfer handler. Blocks indefinitely
@@ -336,6 +344,39 @@ This must be running otherwise the library **will not** work. including transfer
 
 * Transfers are processed per slot range.
 * Partial transfers can occur; if any item fails to fully transfer, the request returns `ok = false`.
+
+---
+### changeType
+
+```lua
+{
+  key = api.key,
+  route = "changeType",
+  data = {
+    name="",
+    frequency={},
+    type = ""
+   }
+}
+```
+**Fields**
+
+* **name**: Name of the box you are changing type of. For example "primary"
+* **frequency**: frequency of the enderstorage for example pink,pink,pink would be {64,64,64}
+* **type**: type to change to, rec,send, or rec/send
+
+**Response**
+
+```lua
+--Success
+{ ok = true }
+
+--Failures
+{ok=false,error="type conflict"}
+{ok=false,error="Enderstorage not found"}
+```
+
+
 
 ---
 
