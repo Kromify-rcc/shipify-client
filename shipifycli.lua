@@ -93,6 +93,7 @@ local commands = {
       context.err("amount is not a number")
       return
     end
+    if not amount then amount = 64 end
     local result = shipifyLib.send(nil,toaddress,{{slot,amount}})
     if result.error then
       context.err(result.error)
